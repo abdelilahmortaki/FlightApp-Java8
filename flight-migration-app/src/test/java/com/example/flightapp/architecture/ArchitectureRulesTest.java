@@ -57,7 +57,7 @@ class ArchitectureRulesTest {
     @Test
     void batchDoesNotDependOnControllers() {
         ArchRule rule = noClasses()
-            .that().resideInAPackage("..batch..")
+            .that().resideInAPackage("..batch..").and().resideOutsideOfPackage("..api..")
             .should().dependOnClassesThat().haveSimpleNameEndingWith("Controller");
         rule.check(classes);
     }

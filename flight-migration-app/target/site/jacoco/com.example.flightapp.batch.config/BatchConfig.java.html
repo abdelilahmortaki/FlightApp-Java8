@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BatchConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">flight-migration-app</a> &gt; <a href="index.source.html" class="el_package">com.example.flightapp.batch.config</a> &gt; <span class="el_source">BatchConfig.java</span></div><h1>BatchConfig.java</h1><pre class="source lang-java linenums">package com.example.flightapp.batch.config;
+
+import com.example.flightapp.booking.domain.BookingStatus;
+import com.example.flightapp.booking.persistence.BookingEntity;
+import com.example.flightapp.booking.persistence.BookingRepository;
+import com.example.flightapp.common.domain.BusinessRuleException;
+import com.example.flightapp.flight.application.FlightApplicationService;
+import com.example.flightapp.flight.domain.Flight;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.List;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.Step;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
+import org.springframework.batch.core.configuration.annotation.StepScope;
+import org.springframework.batch.core.configuration.annotation.StepBuilderFactory;
+import org.springframework.batch.core.launch.support.RunIdIncrementer;
+import org.springframework.batch.item.ItemProcessor;
+import org.springframework.batch.item.ItemWriter;
+import org.springframework.batch.item.file.FlatFileItemReader;
+import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
+import org.springframework.batch.item.file.mapping.DefaultLineMapper;
+import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
+import org.springframework.batch.repeat.RepeatStatus;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+
+@Configuration
+@EnableBatchProcessing
+<span class="fc" id="L37">public class BatchConfig {</span>
+
+    @Bean
+    public Job flightImportJob(JobBuilderFactory jobs, Step flightImportStep) {
+<span class="fc" id="L41">        return jobs.get(&quot;flightImportJob&quot;)</span>
+<span class="fc" id="L42">            .incrementer(new RunIdIncrementer())</span>
+<span class="fc" id="L43">            .start(flightImportStep)</span>
+<span class="fc" id="L44">            .build();</span>
+    }
+
+    @Bean
+    public Step flightImportStep(StepBuilderFactory steps,
+                                 FlatFileItemReader&lt;FlightCsvRow&gt; flightCsvReader,
+                                 ItemProcessor&lt;FlightCsvRow, Flight&gt; flightCsvProcessor,
+                                 ItemWriter&lt;Flight&gt; flightWriter) {
+<span class="fc" id="L52">        return steps.get(&quot;flightImportStep&quot;)</span>
+<span class="fc" id="L53">            .&lt;FlightCsvRow, Flight&gt;chunk(25)</span>
+<span class="fc" id="L54">            .reader(flightCsvReader)</span>
+<span class="fc" id="L55">            .processor(flightCsvProcessor)</span>
+<span class="fc" id="L56">            .writer(flightWriter)</span>
+<span class="fc" id="L57">            .faultTolerant()</span>
+<span class="fc" id="L58">            .skip(BusinessRuleException.class)</span>
+<span class="fc" id="L59">            .skip(IllegalArgumentException.class)</span>
+<span class="fc" id="L60">            .skipLimit(10)</span>
+<span class="fc" id="L61">            .build();</span>
+    }
+
+    @Bean
+    public Job bookingExportJob(JobBuilderFactory jobs, Step bookingExportStep) {
+<span class="fc" id="L66">        return jobs.get(&quot;bookingExportJob&quot;)</span>
+<span class="fc" id="L67">            .incrementer(new RunIdIncrementer())</span>
+<span class="fc" id="L68">            .start(bookingExportStep)</span>
+<span class="fc" id="L69">            .build();</span>
+    }
+
+    @Bean
+    public Step bookingExportStep(StepBuilderFactory steps, BookingRepository bookingRepository) {
+<span class="fc" id="L74">        return steps.get(&quot;bookingExportStep&quot;)</span>
+<span class="fc" id="L75">            .tasklet((contribution, chunkContext) -&gt; {</span>
+<span class="nc" id="L76">                String outputFile = (String) chunkContext.getStepContext()</span>
+<span class="nc" id="L77">                    .getJobParameters()</span>
+<span class="nc" id="L78">                    .get(&quot;outputFile&quot;);</span>
+<span class="nc" id="L79">                writeConfirmedBookings(bookingRepository, outputFile);</span>
+<span class="nc" id="L80">                return RepeatStatus.FINISHED;</span>
+            })
+<span class="fc" id="L82">            .build();</span>
+    }
+
+    @Bean
+    @StepScope
+    public FlatFileItemReader&lt;FlightCsvRow&gt; flightCsvReader(@Value(&quot;#{jobParameters['fileName']}&quot;) String fileName) {
+<span class="fc" id="L88">        FlatFileItemReader&lt;FlightCsvRow&gt; reader = new FlatFileItemReader&lt;FlightCsvRow&gt;();</span>
+<span class="fc" id="L89">        reader.setResource(resolveInput(fileName));</span>
+<span class="fc" id="L90">        reader.setLinesToSkip(1);</span>
+<span class="fc" id="L91">        DefaultLineMapper&lt;FlightCsvRow&gt; lineMapper = new DefaultLineMapper&lt;FlightCsvRow&gt;();</span>
+<span class="fc" id="L92">        DelimitedLineTokenizer tokenizer = new DelimitedLineTokenizer();</span>
+<span class="fc" id="L93">        tokenizer.setNames(new String[] {</span>
+            &quot;flightNumber&quot;,
+            &quot;originAirportCode&quot;,
+            &quot;destinationAirportCode&quot;,
+            &quot;departureTime&quot;,
+            &quot;arrivalTime&quot;,
+            &quot;capacity&quot;
+        });
+<span class="fc" id="L101">        BeanWrapperFieldSetMapper&lt;FlightCsvRow&gt; fieldSetMapper = new BeanWrapperFieldSetMapper&lt;FlightCsvRow&gt;();</span>
+<span class="fc" id="L102">        fieldSetMapper.setTargetType(FlightCsvRow.class);</span>
+<span class="fc" id="L103">        lineMapper.setLineTokenizer(tokenizer);</span>
+<span class="fc" id="L104">        lineMapper.setFieldSetMapper(fieldSetMapper);</span>
+<span class="fc" id="L105">        reader.setLineMapper(lineMapper);</span>
+<span class="fc" id="L106">        return reader;</span>
+    }
+
+    @Bean
+    public ItemProcessor&lt;FlightCsvRow, Flight&gt; flightCsvProcessor() {
+<span class="fc" id="L111">        return row -&gt; new Flight(</span>
+            null,
+<span class="fc" id="L113">            row.getFlightNumber(),</span>
+<span class="fc" id="L114">            row.getOriginAirportCode(),</span>
+<span class="fc" id="L115">            row.getDestinationAirportCode(),</span>
+<span class="fc" id="L116">            LocalDateTime.parse(row.getDepartureTime()),</span>
+<span class="fc" id="L117">            LocalDateTime.parse(row.getArrivalTime()),</span>
+<span class="fc" id="L118">            row.getCapacity()</span>
+        );
+    }
+
+    @Bean
+    public ItemWriter&lt;Flight&gt; flightWriter(FlightApplicationService flightService) {
+<span class="fc" id="L124">        return flights -&gt; {</span>
+<span class="fc bfc" id="L125" title="All 2 branches covered.">            for (Flight flight : flights) {</span>
+<span class="fc" id="L126">                flightService.createOrUpdateByFlightNumber(flight);</span>
+<span class="fc" id="L127">            }</span>
+<span class="fc" id="L128">        };</span>
+    }
+
+    private Resource resolveInput(String fileName) {
+<span class="pc bpc" id="L132" title="3 of 4 branches missed.">        if (fileName == null || fileName.trim().isEmpty()) {</span>
+<span class="fc" id="L133">            return new ClassPathResource(&quot;batch/input/flights-sample.csv&quot;);</span>
+        }
+<span class="nc" id="L135">        File file = new File(fileName);</span>
+<span class="nc bnc" id="L136" title="All 2 branches missed.">        if (file.exists()) {</span>
+<span class="nc" id="L137">            return new FileSystemResource(file);</span>
+        }
+<span class="nc" id="L139">        return new ClassPathResource(fileName);</span>
+    }
+
+    private void writeConfirmedBookings(BookingRepository bookingRepository, String outputFile) throws IOException {
+<span class="nc bnc" id="L143" title="All 4 branches missed.">        String path = outputFile == null || outputFile.trim().isEmpty()</span>
+            ? &quot;target/booking-export.csv&quot;
+            : outputFile;
+<span class="nc" id="L146">        File file = new File(path);</span>
+<span class="nc" id="L147">        File parent = file.getParentFile();</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">        if (parent != null) {</span>
+<span class="nc" id="L149">            parent.mkdirs();</span>
+        }
+<span class="nc" id="L151">        List&lt;BookingEntity&gt; bookings = bookingRepository.findByStatus(BookingStatus.CONFIRMED);</span>
+<span class="nc" id="L152">        FileWriter writer = new FileWriter(file);</span>
+        try {
+<span class="nc" id="L154">            writer.write(&quot;bookingReference,flightId,passengerName,passengerEmail,createdAt\n&quot;);</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">            for (BookingEntity booking : bookings) {</span>
+<span class="nc" id="L156">                writer.write(booking.getBookingReference() + &quot;,&quot;</span>
+<span class="nc" id="L157">                    + booking.getFlightId() + &quot;,&quot;</span>
+<span class="nc" id="L158">                    + booking.getPassengerName() + &quot;,&quot;</span>
+<span class="nc" id="L159">                    + booking.getPassengerEmail() + &quot;,&quot;</span>
+<span class="nc" id="L160">                    + booking.getCreatedAt() + &quot;\n&quot;);</span>
+<span class="nc" id="L161">            }</span>
+        } finally {
+<span class="nc" id="L163">            writer.close();</span>
+        }
+<span class="nc" id="L165">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

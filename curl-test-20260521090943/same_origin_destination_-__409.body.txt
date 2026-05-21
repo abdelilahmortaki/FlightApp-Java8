@@ -1,0 +1,1 @@
+{"code":"BUSINESS_RULE_ERROR","message":"Origin and destination must be different","timestamp":"2026-05-21T09:09:46.213"}

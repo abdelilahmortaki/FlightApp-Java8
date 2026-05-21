@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SecurityConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">flight-migration-app</a> &gt; <a href="index.source.html" class="el_package">com.example.flightapp.auth.config</a> &gt; <span class="el_source">SecurityConfig.java</span></div><h1>SecurityConfig.java</h1><pre class="source lang-java linenums">package com.example.flightapp.auth.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+@Configuration
+@EnableWebSecurity
+<span class="fc" id="L15">public class SecurityConfig extends WebSecurityConfigurerAdapter {</span>
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+<span class="fc" id="L19">        return new BCryptPasswordEncoder();</span>
+    }
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+<span class="fc" id="L24">        auth.inMemoryAuthentication()</span>
+<span class="fc" id="L25">            .passwordEncoder(passwordEncoder())</span>
+<span class="fc" id="L26">            .withUser(&quot;admin&quot;)</span>
+<span class="fc" id="L27">            .password(passwordEncoder().encode(&quot;admin123&quot;))</span>
+<span class="fc" id="L28">            .roles(&quot;ADMIN&quot;)</span>
+<span class="fc" id="L29">            .and()</span>
+<span class="fc" id="L30">            .withUser(&quot;agent&quot;)</span>
+<span class="fc" id="L31">            .password(passwordEncoder().encode(&quot;agent123&quot;))</span>
+<span class="fc" id="L32">            .roles(&quot;AGENT&quot;)</span>
+<span class="fc" id="L33">            .and()</span>
+<span class="fc" id="L34">            .withUser(&quot;viewer&quot;)</span>
+<span class="fc" id="L35">            .password(passwordEncoder().encode(&quot;viewer123&quot;))</span>
+<span class="fc" id="L36">            .roles(&quot;VIEWER&quot;);</span>
+<span class="fc" id="L37">    }</span>
+
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        // Migration debt: replace WebSecurityConfigurerAdapter with SecurityFilterChain on Boot 3+.
+<span class="fc" id="L42">        http</span>
+<span class="fc" id="L43">            .csrf().disable()</span>
+<span class="fc" id="L44">            .authorizeRequests()</span>
+<span class="fc" id="L45">            .antMatchers(&quot;/h2-console/**&quot;).hasRole(&quot;ADMIN&quot;)</span>
+<span class="fc" id="L46">            .antMatchers(HttpMethod.GET, &quot;/api/flights/**&quot;).hasAnyRole(&quot;ADMIN&quot;, &quot;AGENT&quot;, &quot;VIEWER&quot;)</span>
+<span class="fc" id="L47">            .antMatchers(HttpMethod.POST, &quot;/api/flights/**&quot;).hasRole(&quot;ADMIN&quot;)</span>
+<span class="fc" id="L48">            .antMatchers(HttpMethod.PUT, &quot;/api/flights/**&quot;).hasRole(&quot;ADMIN&quot;)</span>
+<span class="fc" id="L49">            .antMatchers(HttpMethod.PATCH, &quot;/api/flights/**&quot;).hasRole(&quot;ADMIN&quot;)</span>
+<span class="fc" id="L50">            .antMatchers(HttpMethod.DELETE, &quot;/api/flights/**&quot;).hasRole(&quot;ADMIN&quot;)</span>
+<span class="fc" id="L51">            .antMatchers(HttpMethod.GET, &quot;/api/bookings/**&quot;).hasAnyRole(&quot;ADMIN&quot;, &quot;AGENT&quot;)</span>
+<span class="fc" id="L52">            .antMatchers(HttpMethod.POST, &quot;/api/bookings/**&quot;).hasAnyRole(&quot;ADMIN&quot;, &quot;AGENT&quot;)</span>
+<span class="fc" id="L53">            .antMatchers(HttpMethod.PATCH, &quot;/api/bookings/**&quot;).hasAnyRole(&quot;ADMIN&quot;, &quot;AGENT&quot;)</span>
+<span class="fc" id="L54">            .antMatchers(&quot;/api/batch/**&quot;).hasRole(&quot;ADMIN&quot;)</span>
+<span class="fc" id="L55">            .antMatchers(&quot;/api/me&quot;).authenticated()</span>
+<span class="fc" id="L56">            .anyRequest().denyAll()</span>
+<span class="fc" id="L57">            .and()</span>
+<span class="fc" id="L58">            .httpBasic()</span>
+<span class="fc" id="L59">            .and()</span>
+<span class="fc" id="L60">            .headers().frameOptions().sameOrigin();</span>
+<span class="fc" id="L61">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

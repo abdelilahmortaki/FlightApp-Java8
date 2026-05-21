@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FlightMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">flight-migration-app</a> &gt; <a href="index.source.html" class="el_package">com.example.flightapp.flight.persistence</a> &gt; <span class="el_source">FlightMapper.java</span></div><h1>FlightMapper.java</h1><pre class="source lang-java linenums">package com.example.flightapp.flight.persistence;
+
+import com.example.flightapp.flight.domain.Flight;
+
+public final class FlightMapper {
+
+    private FlightMapper() {
+    }
+
+    public static Flight toDomain(FlightEntity entity) {
+<span class="fc" id="L11">        Flight flight = new Flight();</span>
+<span class="fc" id="L12">        flight.setId(entity.getId());</span>
+<span class="fc" id="L13">        flight.setFlightNumber(entity.getFlightNumber());</span>
+<span class="fc" id="L14">        flight.setOriginAirportCode(entity.getOriginAirportCode());</span>
+<span class="fc" id="L15">        flight.setDestinationAirportCode(entity.getDestinationAirportCode());</span>
+<span class="fc" id="L16">        flight.setDepartureTime(entity.getDepartureTime());</span>
+<span class="fc" id="L17">        flight.setArrivalTime(entity.getArrivalTime());</span>
+<span class="fc" id="L18">        flight.setCapacity(entity.getCapacity());</span>
+<span class="fc" id="L19">        flight.setAvailableSeats(entity.getAvailableSeats());</span>
+<span class="fc" id="L20">        flight.setStatus(entity.getStatus());</span>
+<span class="fc" id="L21">        return flight;</span>
+    }
+
+    public static FlightEntity toEntity(Flight flight) {
+<span class="fc" id="L25">        FlightEntity entity = new FlightEntity();</span>
+<span class="fc" id="L26">        copyToEntity(flight, entity);</span>
+<span class="fc" id="L27">        return entity;</span>
+    }
+
+    public static void copyToEntity(Flight flight, FlightEntity entity) {
+<span class="fc" id="L31">        entity.setId(flight.getId());</span>
+<span class="fc" id="L32">        entity.setFlightNumber(flight.getFlightNumber());</span>
+<span class="fc" id="L33">        entity.setOriginAirportCode(flight.getOriginAirportCode());</span>
+<span class="fc" id="L34">        entity.setDestinationAirportCode(flight.getDestinationAirportCode());</span>
+<span class="fc" id="L35">        entity.setDepartureTime(flight.getDepartureTime());</span>
+<span class="fc" id="L36">        entity.setArrivalTime(flight.getArrivalTime());</span>
+<span class="fc" id="L37">        entity.setCapacity(flight.getCapacity());</span>
+<span class="fc" id="L38">        entity.setAvailableSeats(flight.getAvailableSeats());</span>
+<span class="fc" id="L39">        entity.setStatus(flight.getStatus());</span>
+<span class="fc" id="L40">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

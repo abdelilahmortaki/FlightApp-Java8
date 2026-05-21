@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Booking.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">flight-migration-app</a> &gt; <a href="index.source.html" class="el_package">com.example.flightapp.booking.domain</a> &gt; <span class="el_source">Booking.java</span></div><h1>Booking.java</h1><pre class="source lang-java linenums">package com.example.flightapp.booking.domain;
+
+import com.example.flightapp.common.domain.BusinessRuleException;
+import java.time.LocalDateTime;
+
+public class Booking {
+
+    private Long id;
+    private String bookingReference;
+    private Long flightId;
+    private String passengerName;
+    private String passengerEmail;
+    private BookingStatus status;
+    private LocalDateTime createdAt;
+
+<span class="fc" id="L16">    public Booking() {</span>
+<span class="fc" id="L17">    }</span>
+
+    public Booking(Long id, String bookingReference, Long flightId,
+<span class="fc" id="L20">                   String passengerName, String passengerEmail) {</span>
+<span class="fc" id="L21">        this.id = id;</span>
+<span class="fc" id="L22">        this.bookingReference = bookingReference;</span>
+<span class="fc" id="L23">        this.flightId = flightId;</span>
+<span class="fc" id="L24">        this.passengerName = passengerName;</span>
+<span class="fc" id="L25">        this.passengerEmail = passengerEmail;</span>
+<span class="fc" id="L26">        this.status = BookingStatus.CONFIRMED;</span>
+<span class="fc" id="L27">        this.createdAt = LocalDateTime.now();</span>
+<span class="fc" id="L28">    }</span>
+
+<span class="fc" id="L30">    public Long getId() { return id; }</span>
+<span class="fc" id="L31">    public void setId(Long id) { this.id = id; }</span>
+<span class="fc" id="L32">    public String getBookingReference() { return bookingReference; }</span>
+<span class="fc" id="L33">    public void setBookingReference(String bookingReference) { this.bookingReference = bookingReference; }</span>
+<span class="fc" id="L34">    public Long getFlightId() { return flightId; }</span>
+<span class="fc" id="L35">    public void setFlightId(Long flightId) { this.flightId = flightId; }</span>
+<span class="fc" id="L36">    public String getPassengerName() { return passengerName; }</span>
+<span class="fc" id="L37">    public void setPassengerName(String passengerName) { this.passengerName = passengerName; }</span>
+<span class="fc" id="L38">    public String getPassengerEmail() { return passengerEmail; }</span>
+<span class="fc" id="L39">    public void setPassengerEmail(String passengerEmail) { this.passengerEmail = passengerEmail; }</span>
+<span class="fc" id="L40">    public BookingStatus getStatus() { return status; }</span>
+<span class="fc" id="L41">    public void setStatus(BookingStatus status) { this.status = status; }</span>
+    public void cancel() {
+<span class="nc bnc" id="L43" title="All 2 branches missed.">        if (BookingStatus.CANCELLED.equals(status)) {</span>
+<span class="nc" id="L44">            throw new BusinessRuleException(&quot;Booking already cancelled&quot;);</span>
+        }
+<span class="nc" id="L46">        this.status = BookingStatus.CANCELLED;</span>
+<span class="nc" id="L47">    }</span>
+<span class="fc" id="L48">    public LocalDateTime getCreatedAt() { return createdAt; }</span>
+<span class="fc" id="L49">    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

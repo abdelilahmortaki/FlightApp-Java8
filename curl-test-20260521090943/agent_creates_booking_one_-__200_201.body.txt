@@ -1,0 +1,1 @@
+{"id":1,"bookingReference":"83f6f481-6415-4fd7-bae5-0c8e4ea76c65","flightId":1,"passengerName":"Passenger One","passengerEmail":"passenger.one.20260521090943@example.com","status":"CONFIRMED","createdAt":"2026-05-21T09:09:47.426"}

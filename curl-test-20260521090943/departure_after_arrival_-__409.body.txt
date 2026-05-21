@@ -1,0 +1,1 @@
+{"code":"BUSINESS_RULE_ERROR","message":"Departure must be before arrival","timestamp":"2026-05-21T09:09:46.449"}

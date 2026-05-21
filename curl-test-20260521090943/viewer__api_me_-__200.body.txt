@@ -1,0 +1,1 @@
+{"username":"viewer","roles":["ROLE_VIEWER"]}

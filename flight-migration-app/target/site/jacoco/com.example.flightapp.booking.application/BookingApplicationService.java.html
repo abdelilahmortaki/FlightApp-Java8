@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BookingApplicationService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">flight-migration-app</a> &gt; <a href="index.source.html" class="el_package">com.example.flightapp.booking.application</a> &gt; <span class="el_source">BookingApplicationService.java</span></div><h1>BookingApplicationService.java</h1><pre class="source lang-java linenums">package com.example.flightapp.booking.application;
+
+import com.example.flightapp.booking.domain.Booking;
+import com.example.flightapp.booking.domain.BookingStatus;
+import com.example.flightapp.booking.persistence.BookingEntity;
+import com.example.flightapp.booking.persistence.BookingMapper;
+import com.example.flightapp.booking.persistence.BookingRepository;
+import com.example.flightapp.common.domain.BusinessRuleException;
+import com.example.flightapp.flight.application.FlightApplicationService;
+import com.example.flightapp.flight.domain.Flight;
+import java.util.UUID;
+import java.util.regex.Pattern;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Service
+public class BookingApplicationService {
+
+<span class="fc" id="L20">    private static final Pattern EMAIL_PATTERN = Pattern.compile(&quot;^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$&quot;);</span>
+
+    private final BookingRepository repository;
+    private final FlightApplicationService flightService;
+
+<span class="fc" id="L25">    public BookingApplicationService(BookingRepository repository, FlightApplicationService flightService) {</span>
+<span class="fc" id="L26">        this.repository = repository;</span>
+<span class="fc" id="L27">        this.flightService = flightService;</span>
+<span class="fc" id="L28">    }</span>
+
+    @Transactional
+    public Booking create(Long flightId, String passengerName, String passengerEmail) {
+<span class="fc" id="L32">        validateEmail(passengerEmail);</span>
+<span class="fc" id="L33">        Flight flight = flightService.findById(flightId);</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if (alreadyBooked(flightId, passengerEmail)) {</span>
+<span class="fc" id="L35">            throw new BusinessRuleException(&quot;Passenger already booked on this flight&quot;);</span>
+        }
+<span class="fc" id="L37">        flight.ensureBookable();</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        if (!flight.hasSeatAvailable()) {</span>
+<span class="fc" id="L39">            throw new BusinessRuleException(&quot;Flight is full&quot;);</span>
+        }
+<span class="fc" id="L41">        flightService.reserveSeat(flightId);</span>
+<span class="fc" id="L42">        Booking booking = new Booking(</span>
+            null,
+<span class="fc" id="L44">            UUID.randomUUID().toString(),</span>
+            flightId,
+            passengerName,
+            passengerEmail
+        );
+        try {
+<span class="fc" id="L50">            return BookingMapper.toDomain(repository.save(BookingMapper.toEntity(booking)));</span>
+<span class="nc" id="L51">        } catch (DataIntegrityViolationException exception) {</span>
+<span class="nc" id="L52">            flightService.releaseSeat(flightId);</span>
+<span class="nc" id="L53">            throw new BusinessRuleException(&quot;Passenger already booked on this flight&quot;);</span>
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public Booking findById(Long id) {
+<span class="fc" id="L59">        return BookingMapper.toDomain(findEntityById(id));</span>
+    }
+
+    @Transactional
+    public Booking cancel(Long id) {
+<span class="fc" id="L64">        BookingEntity entity = findEntityById(id);</span>
+<span class="fc" id="L65">        Booking booking = BookingMapper.toDomain(entity);</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (BookingStatus.CANCELLED.equals(booking.getStatus())) {</span>
+<span class="fc" id="L67">            throw new BusinessRuleException(&quot;Booking already cancelled&quot;);</span>
+        }
+<span class="fc" id="L69">        flightService.releaseSeat(booking.getFlightId());</span>
+<span class="fc" id="L70">        booking.setStatus(BookingStatus.CANCELLED);</span>
+<span class="fc" id="L71">        BookingMapper.copyToEntity(booking, entity);</span>
+<span class="fc" id="L72">        return BookingMapper.toDomain(repository.save(entity));</span>
+    }
+
+    private boolean alreadyBooked(Long flightId, String passengerEmail) {
+<span class="fc" id="L76">        return repository.existsByFlightIdAndPassengerEmailIgnoreCaseAndStatus(</span>
+            flightId,
+            passengerEmail,
+            BookingStatus.CONFIRMED
+        );
+    }
+
+    private BookingEntity findEntityById(Long id) {
+<span class="pc" id="L84">        return repository.findById(id).orElseThrow(() -&gt; new BusinessRuleException(&quot;Booking not found&quot;));</span>
+    }
+
+    private void validateEmail(String passengerEmail) {
+<span class="pc bpc" id="L88" title="2 of 4 branches missed.">        if (passengerEmail == null || !EMAIL_PATTERN.matcher(passengerEmail).matches()) {</span>
+<span class="nc" id="L89">            throw new BusinessRuleException(&quot;Passenger email is invalid&quot;);</span>
+        }
+<span class="fc" id="L91">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

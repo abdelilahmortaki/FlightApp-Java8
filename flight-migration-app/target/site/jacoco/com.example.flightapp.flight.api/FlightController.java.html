@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FlightController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">flight-migration-app</a> &gt; <a href="index.source.html" class="el_package">com.example.flightapp.flight.api</a> &gt; <span class="el_source">FlightController.java</span></div><h1>FlightController.java</h1><pre class="source lang-java linenums">package com.example.flightapp.flight.api;
+
+import com.example.flightapp.flight.application.FlightApplicationService;
+import com.example.flightapp.flight.domain.Flight;
+import java.util.ArrayList;
+import java.util.List;
+import javax.validation.Valid;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping(&quot;/api/flights&quot;)
+public class FlightController {
+
+    private final FlightApplicationService service;
+
+<span class="fc" id="L23">    public FlightController(FlightApplicationService service) {</span>
+<span class="fc" id="L24">        this.service = service;</span>
+<span class="fc" id="L25">    }</span>
+
+    @GetMapping
+    public Object findAll(@RequestParam(required = false) Integer page,
+                          @RequestParam(required = false) Integer size) {
+<span class="pc bpc" id="L30" title="1 of 4 branches missed.">        if (page != null || size != null) {</span>
+<span class="pc bpc" id="L31" title="1 of 2 branches missed.">            int resolvedPage = page == null ? 0 : page.intValue();</span>
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">            int resolvedSize = size == null ? 20 : size.intValue();</span>
+<span class="fc" id="L33">            return FlightPageResponse.from(</span>
+<span class="fc" id="L34">                service.findPage(resolvedPage, resolvedSize),</span>
+                resolvedPage,
+                resolvedSize,
+<span class="fc" id="L37">                service.count()</span>
+            );
+        }
+<span class="fc" id="L40">        List&lt;FlightResponse&gt; responses = new ArrayList&lt;FlightResponse&gt;();</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        for (Flight flight : service.findAll()) {</span>
+<span class="fc" id="L42">            responses.add(FlightResponse.from(flight));</span>
+<span class="fc" id="L43">        }</span>
+<span class="fc" id="L44">        return responses;</span>
+    }
+
+    @GetMapping(&quot;/{id}&quot;)
+    public FlightResponse findById(@PathVariable Long id) {
+<span class="fc" id="L49">        return FlightResponse.from(service.findById(id));</span>
+    }
+
+    @PostMapping
+    public FlightResponse create(@Valid @RequestBody FlightRequest request) {
+<span class="fc" id="L54">        Flight flight = new Flight(</span>
+            null,
+<span class="fc" id="L56">            request.getFlightNumber(),</span>
+<span class="fc" id="L57">            request.getOriginAirportCode(),</span>
+<span class="fc" id="L58">            request.getDestinationAirportCode(),</span>
+<span class="fc" id="L59">            request.getDepartureTime(),</span>
+<span class="fc" id="L60">            request.getArrivalTime(),</span>
+<span class="fc" id="L61">            request.getCapacity()</span>
+        );
+<span class="fc" id="L63">        return FlightResponse.from(service.create(flight));</span>
+    }
+
+    @PatchMapping(&quot;/{id}/status&quot;)
+    public FlightResponse updateStatus(@PathVariable Long id,
+                                       @Valid @RequestBody FlightStatusRequest request) {
+<span class="fc" id="L69">        return FlightResponse.from(service.updateStatus(id, request.getStatus()));</span>
+    }
+
+    @PatchMapping(&quot;/{id}/cancel&quot;)
+    public FlightResponse cancel(@PathVariable Long id) {
+<span class="fc" id="L74">        return FlightResponse.from(service.cancel(id));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

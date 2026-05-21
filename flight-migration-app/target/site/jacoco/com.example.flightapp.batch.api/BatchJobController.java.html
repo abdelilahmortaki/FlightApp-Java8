@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BatchJobController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">flight-migration-app</a> &gt; <a href="index.source.html" class="el_package">com.example.flightapp.batch.api</a> &gt; <span class="el_source">BatchJobController.java</span></div><h1>BatchJobController.java</h1><pre class="source lang-java linenums">package com.example.flightapp.batch.api;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.explore.JobExplorer;
+import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping(&quot;/api/batch&quot;)
+public class BatchJobController {
+
+    private final JobLauncher jobLauncher;
+    private final Job flightImportJob;
+    private final Job bookingExportJob;
+    private final JobExplorer jobExplorer;
+
+    public BatchJobController(JobLauncher jobLauncher,
+                              Job flightImportJob,
+                              Job bookingExportJob,
+<span class="fc" id="L33">                              JobExplorer jobExplorer) {</span>
+<span class="fc" id="L34">        this.jobLauncher = jobLauncher;</span>
+<span class="fc" id="L35">        this.flightImportJob = flightImportJob;</span>
+<span class="fc" id="L36">        this.bookingExportJob = bookingExportJob;</span>
+<span class="fc" id="L37">        this.jobExplorer = jobExplorer;</span>
+<span class="fc" id="L38">    }</span>
+
+    @GetMapping(&quot;/jobs&quot;)
+    public List&lt;String&gt; jobs() {
+<span class="nc" id="L42">        List&lt;String&gt; jobs = new ArrayList&lt;String&gt;();</span>
+<span class="nc" id="L43">        jobs.add(flightImportJob.getName());</span>
+<span class="nc" id="L44">        jobs.add(bookingExportJob.getName());</span>
+<span class="nc" id="L45">        return jobs;</span>
+    }
+
+    @GetMapping(&quot;/jobs/{jobName}/executions&quot;)
+    public List&lt;Map&lt;String, Object&gt;&gt; executions(@PathVariable String jobName) {
+<span class="nc" id="L50">        Set&lt;JobExecution&gt; executions = jobExplorer.findRunningJobExecutions(jobName);</span>
+<span class="nc" id="L51">        List&lt;Map&lt;String, Object&gt;&gt; response = new ArrayList&lt;Map&lt;String, Object&gt;&gt;();</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">        for (JobExecution execution : executions) {</span>
+<span class="nc" id="L53">            response.add(toMap(execution));</span>
+<span class="nc" id="L54">        }</span>
+<span class="nc" id="L55">        List&lt;org.springframework.batch.core.JobInstance&gt; instances = jobExplorer.getJobInstances(jobName, 0, 20);</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        for (org.springframework.batch.core.JobInstance instance : instances) {</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">            for (JobExecution execution : jobExplorer.getJobExecutions(instance)) {</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">                if (!executions.contains(execution)) {</span>
+<span class="nc" id="L59">                    response.add(toMap(execution));</span>
+                }
+<span class="nc" id="L61">            }</span>
+<span class="nc" id="L62">        }</span>
+<span class="nc" id="L63">        return response;</span>
+    }
+
+    @PostMapping(&quot;/jobs/{jobName}/launch&quot;)
+    public BatchJobLaunchResponse launch(@PathVariable String jobName,
+                                         @RequestParam(required = false) String fileName,
+                                         @RequestParam(required = false) String outputFile) throws Exception {
+<span class="nc" id="L70">        Job job = resolveJob(jobName);</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (job == null) {</span>
+<span class="nc" id="L72">            throw new IllegalArgumentException(&quot;Unknown job: &quot; + jobName);</span>
+        }
+<span class="nc" id="L74">        JobParametersBuilder builder = new JobParametersBuilder()</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">            .addLong(&quot;runAt&quot;, System.currentTimeMillis())</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">            .addString(&quot;fileName&quot;, fileName == null ? &quot;&quot; : fileName)</span>
+<span class="nc" id="L77">            .addString(&quot;outputFile&quot;, outputFile == null ? &quot;&quot; : outputFile);</span>
+<span class="nc" id="L78">        JobParameters parameters = builder.toJobParameters();</span>
+<span class="nc" id="L79">        JobExecution execution = jobLauncher.run(job, parameters);</span>
+<span class="nc" id="L80">        return new BatchJobLaunchResponse(</span>
+<span class="nc" id="L81">            job.getName(),</span>
+<span class="nc" id="L82">            execution.getId(),</span>
+<span class="nc" id="L83">            execution.getStatus().toString()</span>
+        );
+    }
+
+    private Job resolveJob(String jobName) {
+<span class="nc bnc" id="L88" title="All 2 branches missed.">        if (flightImportJob.getName().equals(jobName)) {</span>
+<span class="nc" id="L89">            return flightImportJob;</span>
+        }
+<span class="nc bnc" id="L91" title="All 2 branches missed.">        if (bookingExportJob.getName().equals(jobName)) {</span>
+<span class="nc" id="L92">            return bookingExportJob;</span>
+        }
+<span class="nc" id="L94">        return null;</span>
+    }
+
+    private Map&lt;String, Object&gt; toMap(JobExecution execution) {
+<span class="nc" id="L98">        Map&lt;String, Object&gt; map = new LinkedHashMap&lt;String, Object&gt;();</span>
+<span class="nc" id="L99">        map.put(&quot;id&quot;, execution.getId());</span>
+<span class="nc" id="L100">        map.put(&quot;jobName&quot;, execution.getJobInstance().getJobName());</span>
+<span class="nc" id="L101">        map.put(&quot;status&quot;, execution.getStatus().toString());</span>
+<span class="nc" id="L102">        map.put(&quot;startTime&quot;, execution.getStartTime());</span>
+<span class="nc" id="L103">        map.put(&quot;endTime&quot;, execution.getEndTime());</span>
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        map.put(&quot;skipCount&quot;, execution.getStepExecutions().isEmpty()</span>
+            ? 0
+<span class="nc" id="L106">            : execution.getStepExecutions().iterator().next().getSkipCount());</span>
+<span class="nc" id="L107">        return map;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FlightPageResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">flight-migration-app</a> &gt; <a href="index.source.html" class="el_package">com.example.flightapp.flight.api</a> &gt; <span class="el_source">FlightPageResponse.java</span></div><h1>FlightPageResponse.java</h1><pre class="source lang-java linenums">package com.example.flightapp.flight.api;
+
+import com.example.flightapp.flight.domain.Flight;
+import java.util.ArrayList;
+import java.util.List;
+
+<span class="fc" id="L7">public class FlightPageResponse {</span>
+
+    private int page;
+    private int size;
+    private long totalElements;
+    private int totalPages;
+    private List&lt;FlightResponse&gt; items;
+
+    public static FlightPageResponse from(List&lt;Flight&gt; flights, int page, int size, long totalElements) {
+<span class="fc" id="L16">        FlightPageResponse response = new FlightPageResponse();</span>
+<span class="fc" id="L17">        response.page = page;</span>
+<span class="fc" id="L18">        response.size = size;</span>
+<span class="fc" id="L19">        response.totalElements = totalElements;</span>
+<span class="pc bpc" id="L20" title="1 of 2 branches missed.">        response.totalPages = size == 0 ? 0 : (int) Math.ceil((double) totalElements / (double) size);</span>
+<span class="fc" id="L21">        response.items = new ArrayList&lt;FlightResponse&gt;();</span>
+<span class="fc bfc" id="L22" title="All 2 branches covered.">        for (Flight flight : flights) {</span>
+<span class="fc" id="L23">            response.items.add(FlightResponse.from(flight));</span>
+<span class="fc" id="L24">        }</span>
+<span class="fc" id="L25">        return response;</span>
+    }
+
+    public int getPage() {
+<span class="fc" id="L29">        return page;</span>
+    }
+
+    public int getSize() {
+<span class="fc" id="L33">        return size;</span>
+    }
+
+    public long getTotalElements() {
+<span class="fc" id="L37">        return totalElements;</span>
+    }
+
+    public int getTotalPages() {
+<span class="fc" id="L41">        return totalPages;</span>
+    }
+
+    public List&lt;FlightResponse&gt; getItems() {
+<span class="fc" id="L45">        return items;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

@@ -1,0 +1,1 @@
+{"timestamp":"2026-05-21T08:09:49.679+0000","status":403,"error":"Forbidden","message":"Forbidden","path":"/api/batch/jobs"}

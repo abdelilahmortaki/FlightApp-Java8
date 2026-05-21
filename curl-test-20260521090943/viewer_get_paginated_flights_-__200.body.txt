@@ -1,0 +1,1 @@
+{"page":0,"size":5,"totalElements":1,"totalPages":1,"items":[{"id":1,"flightNumber":"AF20260521090943","originAirportCode":"CDG","destinationAirportCode":"LIS","departureTime":"2026-06-02T10:00:00","arrivalTime":"2026-06-02T12:30:00","capacity":2,"availableSeats":2,"status":"SCHEDULED"}]}

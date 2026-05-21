@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BookingEntity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">flight-migration-app</a> &gt; <a href="index.source.html" class="el_package">com.example.flightapp.booking.persistence</a> &gt; <span class="el_source">BookingEntity.java</span></div><h1>BookingEntity.java</h1><pre class="source lang-java linenums">package com.example.flightapp.booking.persistence;
+
+import com.example.flightapp.booking.domain.BookingStatus;
+import java.time.LocalDateTime;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Index;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
+import javax.persistence.Version;
+
+@Entity
+@Table(
+    name = &quot;bookings&quot;,
+    uniqueConstraints = {
+        @UniqueConstraint(name = &quot;uk_bookings_reference&quot;, columnNames = &quot;booking_reference&quot;),
+        @UniqueConstraint(name = &quot;uk_bookings_flight_email&quot;, columnNames = {&quot;flight_id&quot;, &quot;passenger_email&quot;})
+    },
+    indexes = {
+        @Index(name = &quot;idx_bookings_flight&quot;, columnList = &quot;flight_id&quot;),
+        @Index(name = &quot;idx_bookings_passenger_email&quot;, columnList = &quot;passenger_email&quot;)
+    }
+)
+<span class="fc" id="L29">public class BookingEntity {</span>
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = &quot;booking_reference&quot;, nullable = false, unique = true)
+    private String bookingReference;
+
+    @Column(name = &quot;flight_id&quot;, nullable = false)
+    private Long flightId;
+
+    @Column(name = &quot;passenger_name&quot;, nullable = false)
+    private String passengerName;
+
+    @Column(name = &quot;passenger_email&quot;, nullable = false)
+    private String passengerEmail;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private BookingStatus status;
+
+    @Column(name = &quot;created_at&quot;, nullable = false)
+    private LocalDateTime createdAt;
+
+    @Version
+    private Long version;
+
+<span class="fc" id="L57">    public Long getId() { return id; }</span>
+<span class="fc" id="L58">    public void setId(Long id) { this.id = id; }</span>
+<span class="fc" id="L59">    public String getBookingReference() { return bookingReference; }</span>
+<span class="fc" id="L60">    public void setBookingReference(String bookingReference) { this.bookingReference = bookingReference; }</span>
+<span class="fc" id="L61">    public Long getFlightId() { return flightId; }</span>
+<span class="fc" id="L62">    public void setFlightId(Long flightId) { this.flightId = flightId; }</span>
+<span class="fc" id="L63">    public String getPassengerName() { return passengerName; }</span>
+<span class="fc" id="L64">    public void setPassengerName(String passengerName) { this.passengerName = passengerName; }</span>
+<span class="fc" id="L65">    public String getPassengerEmail() { return passengerEmail; }</span>
+<span class="fc" id="L66">    public void setPassengerEmail(String passengerEmail) { this.passengerEmail = passengerEmail; }</span>
+<span class="fc" id="L67">    public BookingStatus getStatus() { return status; }</span>
+<span class="fc" id="L68">    public void setStatus(BookingStatus status) { this.status = status; }</span>
+<span class="fc" id="L69">    public LocalDateTime getCreatedAt() { return createdAt; }</span>
+<span class="fc" id="L70">    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }</span>
+<span class="fc" id="L71">    public Long getVersion() { return version; }</span>
+<span class="nc" id="L72">    public void setVersion(Long version) { this.version = version; }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

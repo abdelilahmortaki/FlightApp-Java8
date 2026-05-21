@@ -1,0 +1,8 @@
+﻿{
+  "flightNumber": "AF20260521090943-BADTIME",
+  "originAirportCode": "CDG",
+  "destinationAirportCode": "LIS",
+  "departureTime": "2026-06-02T14:00:00",
+  "arrivalTime": "2026-06-02T12:30:00",
+  "capacity": 2
+}
