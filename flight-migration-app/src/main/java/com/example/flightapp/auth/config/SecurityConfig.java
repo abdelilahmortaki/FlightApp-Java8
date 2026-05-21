@@ -38,6 +38,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        // Migration debt: replace WebSecurityConfigurerAdapter with SecurityFilterChain on Boot 3+.
         http
             .csrf().disable()
             .authorizeRequests()
@@ -47,10 +48,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers(HttpMethod.PUT, "/api/flights/**").hasRole("ADMIN")
             .antMatchers(HttpMethod.PATCH, "/api/flights/**").hasRole("ADMIN")
             .antMatchers(HttpMethod.DELETE, "/api/flights/**").hasRole("ADMIN")
-            .antMatchers("/api/bookings/**").hasAnyRole("ADMIN", "AGENT")
+            .antMatchers(HttpMethod.GET, "/api/bookings/**").hasAnyRole("ADMIN", "AGENT")
+            .antMatchers(HttpMethod.POST, "/api/bookings/**").hasAnyRole("ADMIN", "AGENT")
+            .antMatchers(HttpMethod.PATCH, "/api/bookings/**").hasAnyRole("ADMIN", "AGENT")
             .antMatchers("/api/batch/**").hasRole("ADMIN")
             .antMatchers("/api/me").authenticated()
-            .anyRequest().authenticated()
+            .anyRequest().denyAll()
             .and()
             .httpBasic()
             .and()

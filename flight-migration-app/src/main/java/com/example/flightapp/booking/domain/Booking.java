@@ -1,5 +1,6 @@
 package com.example.flightapp.booking.domain;
 
+import com.example.flightapp.common.domain.BusinessRuleException;
 import java.time.LocalDateTime;
 
 public class Booking {
@@ -38,6 +39,12 @@ public class Booking {
     public void setPassengerEmail(String passengerEmail) { this.passengerEmail = passengerEmail; }
     public BookingStatus getStatus() { return status; }
     public void setStatus(BookingStatus status) { this.status = status; }
+    public void cancel() {
+        if (BookingStatus.CANCELLED.equals(status)) {
+            throw new BusinessRuleException("Booking already cancelled");
+        }
+        this.status = BookingStatus.CANCELLED;
+    }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

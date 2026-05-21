@@ -1,5 +1,6 @@
 package com.example.flightapp.flight.domain;
 
+import com.example.flightapp.common.domain.BusinessRuleException;
 import java.time.LocalDateTime;
 
 public class Flight {
@@ -36,11 +37,52 @@ public class Flight {
     }
 
     public void reserveSeat() {
+        ensureBookable();
+        if (!hasSeatAvailable()) {
+            throw new BusinessRuleException("Flight is full");
+        }
         this.availableSeats = this.availableSeats - 1;
     }
 
     public void releaseSeat() {
+        if (availableSeats >= capacity) {
+            throw new BusinessRuleException("Available seats cannot exceed capacity");
+        }
         this.availableSeats = this.availableSeats + 1;
+    }
+
+    public void changeStatus(FlightStatus status) {
+        ensureModifiable();
+        this.status = status;
+    }
+
+    public void cancel() {
+        ensureModifiable();
+        if (FlightStatus.CANCELLED.equals(status)) {
+            throw new BusinessRuleException("Flight already cancelled");
+        }
+        this.status = FlightStatus.CANCELLED;
+    }
+
+    public void ensureBookable() {
+        if (FlightStatus.CANCELLED.equals(status)) {
+            throw new BusinessRuleException("Cannot book a cancelled flight");
+        }
+        if (FlightStatus.DEPARTED.equals(status)) {
+            throw new BusinessRuleException("Cannot book a departed flight");
+        }
+        if (FlightStatus.ARRIVED.equals(status)) {
+            throw new BusinessRuleException("Cannot book an arrived flight");
+        }
+    }
+
+    private void ensureModifiable() {
+        if (FlightStatus.DEPARTED.equals(status)) {
+            throw new BusinessRuleException("Cannot modify a departed flight");
+        }
+        if (FlightStatus.ARRIVED.equals(status)) {
+            throw new BusinessRuleException("Cannot modify an arrived flight");
+        }
     }
 
     public Long getId() { return id; }
@@ -58,7 +100,12 @@ public class Flight {
     public int getCapacity() { return capacity; }
     public void setCapacity(int capacity) { this.capacity = capacity; }
     public int getAvailableSeats() { return availableSeats; }
-    public void setAvailableSeats(int availableSeats) { this.availableSeats = availableSeats; }
+    public void setAvailableSeats(int availableSeats) {
+        if (availableSeats < 0) {
+            throw new BusinessRuleException("Available seats cannot be negative");
+        }
+        this.availableSeats = availableSeats;
+    }
     public FlightStatus getStatus() { return status; }
     public void setStatus(FlightStatus status) { this.status = status; }
 }

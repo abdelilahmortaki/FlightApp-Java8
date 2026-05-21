@@ -1,11 +1,15 @@
 # Security
 
-HTTP Basic users:
+HTTP Basic is for migration baseline and smoke tests only. Do not use these static users in production.
 
-| User | Password | Role |
-|---|---|---|
-| admin | admin123 | ADMIN |
-| agent | agent123 | AGENT |
-| viewer | viewer123 | VIEWER |
+| Area | ADMIN | AGENT | VIEWER |
+|---|---:|---:|---:|
+| `GET /api/me` | yes | yes | yes |
+| flight read | yes | yes | yes |
+| flight write | yes | no | no |
+| booking read | yes | yes | no |
+| booking create/cancel | yes | yes | no |
+| batch | yes | no | no |
+| H2 console | yes | no | no |
 
-This baseline intentionally uses `WebSecurityConfigurerAdapter` for Spring Security 5.x compatibility.
+Security stays on `WebSecurityConfigurerAdapter` because Spring Boot 2.2 uses Spring Security 5.x. Code marks this as Boot 3+ migration debt.

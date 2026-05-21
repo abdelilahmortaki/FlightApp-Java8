@@ -2,6 +2,7 @@ package com.example.flightapp.booking.api;
 
 import com.example.flightapp.booking.application.BookingApplicationService;
 import javax.validation.Valid;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,6 +29,11 @@ public class BookingController {
                 request.getPassengerEmail()
             )
         );
+    }
+
+    @GetMapping("/{id}")
+    public BookingResponse findById(@PathVariable Long id) {
+        return BookingResponse.from(service.findById(id));
     }
 
     @PatchMapping("/{id}/cancel")

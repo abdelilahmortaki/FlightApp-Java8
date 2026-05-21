@@ -5,6 +5,18 @@ import com.example.flightapp.common.domain.BusinessRuleException;
 public class FlightPolicy {
 
     public void validateForCreation(Flight flight) {
+        if (flight.getFlightNumber() == null || flight.getFlightNumber().trim().isEmpty()) {
+            throw new BusinessRuleException("Flight number is required");
+        }
+        if (flight.getOriginAirportCode() == null || flight.getOriginAirportCode().trim().isEmpty()) {
+            throw new BusinessRuleException("Origin airport is required");
+        }
+        if (flight.getDestinationAirportCode() == null || flight.getDestinationAirportCode().trim().isEmpty()) {
+            throw new BusinessRuleException("Destination airport is required");
+        }
+        if (flight.getDepartureTime() == null || flight.getArrivalTime() == null) {
+            throw new BusinessRuleException("Flight times are required");
+        }
         if (flight.getOriginAirportCode().equals(flight.getDestinationAirportCode())) {
             throw new BusinessRuleException("Origin and destination must be different");
         }
